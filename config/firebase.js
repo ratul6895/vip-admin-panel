@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+require('firebase-admin/database');
 
 const serviceAccount = {
   "type": "service_account",
