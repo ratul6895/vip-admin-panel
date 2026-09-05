@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Req Approver</title>
+    <style>
+        body { background-color: #0b1120; color: #fff; font-family: sans-serif; padding: 20px; }
+        .card { background: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 20px; max-width: 480px; margin: 0 auto; }
+        .notice-box { background: rgba(30, 58, 138, 0.3); border: 1px solid #1d4ed8; color: #93c5fd; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; color: #9ca3af; font-size: 13px; }
+        input { width: 100%; padding: 10px; background: #030712; border: 1px solid #374151; color: #fff; border-radius: 6px; box-sizing: border-box; margin-top: 5px; }
+        button.approve-btn { width: 100%; margin-top: 20px; padding: 12px; background: #f59e0b; border: none; color: #000; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        button.approve-btn:hover { background: #d97706; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Req Approver</h2>[span_1](start_span)[span_1](end_span)
+    <div class="notice-box">
+        লক চ্যানেলের পেন্ডিং Join Requests accept করুন।[span_2](start_span)[span_2](end_span)
+    </div>
+
+    <form id="approverForm">
+        <label>Target Channel ID</label>[span_3](start_span)[span_3](end_span)
+        <input type="text" id="channelId" placeholder="-100xxxxxxxxxx" required>[span_4](start_span)[span_4](end_span)
+
+        <button type="submit" id="btnSubmit" class="approve-btn">✓ APPROVE ALL</button>[span_5](start_span)[span_5](end_span)
+    </form>
+</div>
+
+<script>
+    document.getElementById('approverForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+        const channelId = document.getElementById('channelId').value;
+
+        btn.disabled = true;
+        btn.innerText = 'Approving... Please wait';
+
+        try {
+            const res = await fetch('/api/approver/approve-all', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ channelId })
+            });
+
+            const result = await res.json();
+            alert(result.message);
+        } catch (error) {
+            alert('An error occurred: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = '✓ APPROVE ALL';
+        }
+    });
+</script>
+</body>
+</html>
