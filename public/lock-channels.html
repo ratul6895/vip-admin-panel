@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lock Channels</title>
+    <style>
+        body { background-color: #0b1120; color: #fff; font-family: sans-serif; padding: 20px; }
+        .card { background: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 20px; max-width: 480px; margin: 0 auto; }
+        .notice-box { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; color: #9ca3af; font-size: 13px; }
+        input { width: 100%; padding: 10px; background: #030712; border: 1px solid #374151; color: #fff; border-radius: 6px; box-sizing: border-box; margin-top: 5px; }
+        button.add-btn { width: 100%; margin-top: 20px; padding: 12px; background: #ef4444; border: none; color: #fff; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        button.add-btn:hover { background: #dc2626; }
+        .channel-list { margin-top: 25px; }
+        .channel-item { background: #1f2937; padding: 12px; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .del-btn { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Lock Channels</h2>
+    <div class="notice-box">
+        মেইন বটের ইউজারকে এই চ্যানেলগুলোতে জয়েন থাকতে হবে।[span_0](start_span)[span_0](end_span)
+    </div>
+
+    <form id="addChannelForm">
+        <label>Channel ID</label>
+        <input type="text" id="channelId" placeholder="-100xxxxxxxxxx" required>[span_1](start_span)[span_1](end_span)
+
+        <label>Invite Link</label>
+        <input type="url" id="inviteLink" placeholder="https://t.me/..." required>[span_2](start_span)[span_2](end_span)
+
+        <label>Button Text</label>
+        <input type="text" id="buttonText" placeholder="Join Channel">[span_3](start_span)[span_3](end_span)
+
+        <button type="submit" class="add-btn">+ ADD LOCK CHANNEL</button>[span_4](start_span)[span_4](end_span)
+    </form>
+
+    <div class="channel-list">
+        <h3>Active Lock Channels</h3>[span_5](start_span)[span_5](end_span)
+        <div id="channelsContainer">লোডিং...</div>
+    </div>
+</div>
+
+<script>
+    // এক্টিভ লক চ্যানেল তালিকা লোড করা
+    async function fetchChannels() {
+        const res = await fetch('/api/channels/list');
+        const result = await res.json();
+        const container = document.getElementById('channelsContainer');
+        container.innerHTML = '';
+
+        if (result.success && result.channels.length > 0) {
+            result.channels.forEach(ch => {
+                container.innerHTML += `
+                    <div class="channel-item">
+                        <div>
+                            <strong>${ch.buttonText}</strong><br>
+                            <small style="color:#9ca3af">${ch.channelId}</small>
+                        </div>
+                        <button class="del-btn" onclick="deleteChannel('${ch.id}')">Delete</button>
+                    </div>
+                `;
+            });
+        } else {
+            container.innerHTML = '<p style="color:#6b7280; font-size:13px;">কোনো লক চ্যানেল পাওয়া যায়নি।</p>';
+        }
+    }
+
+    // চ্যানেল অ্যাড করা
+    document.getElementById('addChannelForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            channelId: document.getElementById('channelId').value,
+            inviteLink: document.getElementById('inviteLink').value,
+            buttonText: document.getElementById('buttonText').value || 'Join Channel'
+        };
+
+        const res = await fetch('/api/channels/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        alert(result.message);
+        if(result.success) {
+            document.getElementById('addChannelForm').reset();
+            fetchChannels();
+        }
+    });
+
+    // চ্যানেল ডিলিট করা
+    async function deleteChannel(id) {
+        if(confirm('আপনি কি এই চ্যানেলটি তালিকা থেকে মুছে ফেলতে চান?')) {
+            const res = await fetch(`/api/channels/delete/${id}`, { method: 'DELETE' });
+            const result = await res.json();
+            alert(result.message);
+            fetchChannels();
+        }
+    }
+
+    fetchChannels();
+</script>
+</body>
+</html>
