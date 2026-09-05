@@ -1,12 +1,9 @@
 const admin = require('firebase-admin');
 
 if (!admin.apps.length) {
-    // Render-এর Environment Variable থেকে JSON পার্স করা
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
     admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: process.env.FIREBASE_DATABASE_URL
+        projectId: process.env.FIREBASE_PROJECT_ID || "vip-admin-panel-4e786",
+        databaseURL: process.env.FIREBASE_DATABASE_URL || "https://vip-admin-panel-4e786-default-rtdb.firebaseio.com"
     });
 }
 
