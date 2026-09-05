@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
 
-// সার্ভিস অ্যাকাউন্টের সম্পূর্ণ কনফিগারেশন
 const serviceAccount = {
   "type": "service_account",
   "project_id": "vip-admin-panel-4e786",
@@ -15,18 +14,13 @@ const serviceAccount = {
   "universe_domain": "googleapis.com"
 };
 
-// ফায়ারবেস ইনিশিয়ালাইজ করা
-try {
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-  }
-  console.log("Firebase Admin Successfully Connected!");
-} catch (error) {
-  console.error("Firebase Connection Error:", error.message);
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://vip-admin-panel-4e786-default-rtdb.firebaseio.com"
+  });
 }
 
-const db = admin.firestore();
+const db = admin.database();
 
 module.exports = { admin, db };
