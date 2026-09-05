@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promo Buttons</title>
+    <style>
+        body { background-color: #0b1120; color: #fff; font-family: sans-serif; padding: 20px; }
+        .card { background: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 20px; max-width: 480px; margin: 0 auto; }
+        .notice-box { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #34d399; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; color: #9ca3af; font-size: 13px; }
+        input { width: 100%; padding: 10px; background: #030712; border: 1px solid #374151; color: #fff; border-radius: 6px; box-sizing: border-box; margin-top: 5px; }
+        button.add-btn { width: 100%; margin-top: 20px; padding: 12px; background: #10b981; border: none; color: #fff; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        button.add-btn:hover { background: #059669; }
+        .promo-list { margin-top: 25px; }
+        .promo-item { background: #1f2937; border-left: 4px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .promo-details { max-width: 75%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .remove-btn { background: #991b1b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .remove-btn:hover { background: #7f1d1d; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Promo Buttons</h2>[span_3](start_span)[span_3](end_span)
+    <div class="notice-box">
+        Optional promo buttons shown to users.[span_4](start_span)[span_4](end_span)
+    </div>
+
+    <form id="addPromoForm">
+        <label>Button Text</label>[span_5](start_span)[span_5](end_span)
+        <input type="text" id="buttonText" placeholder="Backup Channel" required>[span_6](start_span)[span_6](end_span)
+
+        <label>URL</label>[span_7](start_span)[span_7](end_span)
+        <input type="url" id="url" placeholder="https://t.me/..." required>[span_8](start_span)[span_8](end_span)
+
+        <button type="submit" class="add-btn">+ ADD PROMO LINK</button>[span_9](start_span)[span_9](end_span)
+    </form>
+
+    <div class="promo-list">
+        <h3>Active Promo Buttons</h3>[span_10](start_span)[span_10](end_span)
+        <div id="promoContainer">লোডিং...</div>
+    </div>
+</div>
+
+<script>
+    // এক্টিভ প্রমো বাটনের তালিকা লোড করা
+    async function fetchPromoButtons() {
+        const res = await fetch('/api/promo/list');
+        const result = await res.json();
+        const container = document.getElementById('promoContainer');
+        container.innerHTML = '';
+
+        if (result.success && result.buttons.length > 0) {
+            result.buttons.forEach(item => {
+                container.innerHTML += `
+                    <div class="promo-item">
+                        <div class="promo-details">
+                            <strong>${item.buttonText}</strong><br>
+                            <small style="color:#9ca3af">${item.url}</small>
+                        </div>
+                        <button class="remove-btn" onclick="deletePromo('${item.id}')">Remove</button>[span_11](start_span)[span_11](end_span)
+                    </div>
+                `;
+            });
+        } else {
+            container.innerHTML = '<p style="color:#6b7280; font-size:13px;">কোনো প্রমো বাটন যুক্ত করা নেই।</p>';
+        }
+    }
+
+    // নতুন লিংক যুক্ত করা
+    document.getElementById('addPromoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            buttonText: document.getElementById('buttonText').value,
+            url: document.getElementById('url').value
+        };
+
+        const res = await fetch('/api/promo/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        alert(result.message);
+        if(result.success) {
+            document.getElementById('addPromoForm').reset();
+            fetchPromoButtons();
+        }
+    });
+
+    // লিংক রিমুভ করা
+    async function deletePromo(id) {
+        if(confirm('আপনি কি এই প্রমো বাটনটি মুছে ফেলতে চান?')) {
+            const res = await fetch(`/api/promo/delete/${id}`, { method: 'DELETE' });
+            const result = await res.json();
+            alert(result.message);
+            fetchPromoButtons();
+        }
+    }
+
+    fetchPromoButtons();
+</script>
+</body>
+</html>
