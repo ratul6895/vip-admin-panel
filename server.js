@@ -1,120 +1,64 @@
 const express = require('express');
-const cors = require('cors');
 const path = require('path');
-const db = require('./config/firebase');
-const { Telegraf } = require('telegraf');
-
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Render/VPS Platform Auto Live URL Detection
-const LIVE_WEB_URL = process.env.RENDER_EXTERNAL_URL || process.env.LIVE_URL || `http://localhost:${PORT}`;
-
-// Middlewares
-app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Serve Static Frontend Files from 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ==========================================
-// API Routes Integration
-// ==========================================
-try {
-    app.use('/api/bot-config', require('./routes/botConfig'));
-    app.use('/api/channel-post', require('./routes/postChannels'));
-    
-    // Optional / Extra Modules ( if files exist )
-    try { app.use('/api/lock-channels', require('./routes/lockChannels')); } catch (e) {}
-    try { app.use('/api/promo', require('./routes/promo')); } catch (e) {}
-    try { app.use('/api/approver', require('./routes/approver')); } catch (e) {}
-    try { app.use('/api/broadcast', require('./routes/broadcast')); } catch (e) {}
-} catch (err) {
-    console.error('Error loading API routes:', err.message);
-}
-
-// ==========================================
-// Admin Panel Direct Page Routes
-// ==========================================
-app.get('/admin/bot-config', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'bot-config.html'));
-});
-
+// ১. মূল ড্যাশবোর্ড রাউট (হোমপেজে ঢুকলেই পুরো ড্যাশবোর্ড দেখাবে)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin-config.html'));
 });
 
-app.get('/', (req, res) => {
-    res.send(`
-        <div style="font-family: sans-serif; text-align: center; padding: 50px;">
-            <h2>🚀 Web App Admin Server is Running Online!</h2>
-            <p>Admin Dashboard live at: <a href="${LIVE_WEB_URL}/admin/post-channels" target="_blank">${LIVE_WEB_URL}/admin/post-channels</a></p>
-        </div>
-    `);
+// ২. ড্যাশবোর্ডের অন্যান্য পেজের রাউটসমূহ
+app.get('/admin/admin-config', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin-config.html'));
 });
 
-// ==========================================
-// Web App Posting Bot Runner (Firebase Sync)
-// ==========================================
-let activeBot = null;
+app.get('/admin/channel-post', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'channel-post.html'));
+});
 
-async function startPostingBot() {
-    try {
-        const configSnap = await db.ref('settings/bot_config').once('value');
-        const config = configSnap.val() || {};
+app.get('/admin/post-channels', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'post-channels.html'));
+});
 
-        if (!config.webAppBotToken) {
-            console.log('⚠️ Posting Bot Token is missing in Firebase. Configure it from Admin Dashboard.');
-            return;
-        }
+app.get('/admin/bot-config', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'lock-channels.html')); 
+});
 
-        // Stop previous bot instance if running
-        if (activeBot) {
-            try { activeBot.stop(); } catch (e) {}
-        }
+app.get('/admin/broadcast', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'broadcast.html'));
+});
 
-        activeBot = new Telegraf(config.webAppBotToken);
+app.get('/admin/videos', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'videos.html'));
+});
 
-        // Load Bot Logic Module
-        try {
-            const posterBotModule = require('./bot/posterBot');
-            if (typeof posterBotModule === 'function') {
-                posterBotModule(activeBot);
-            }
-        } catch (botErr) {
-            console.log('ℹ️ Bot custom handler (bot/posterBot.js) optional/not loaded:', botErr.message);
-        }
+app.get('/admin/promo', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'promo-buttons.html'));
+});
 
-        // Basic Bot Commands
-        activeBot.start((ctx) => {
-            ctx.reply('👋 Welcome to Web App Poster Bot! Use /upload or Dashboard to generate posts.');
-        });
+app.get('/admin/approver', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'req-approver.html'));
+});
 
-        // Launch Bot in Polling Mode
-        await activeBot.launch();
-        console.log('✅ Telegram Web App Bot Launched Successfully!');
+// API Routes Import
+const postChannelsRoute = require('./routes/postChannels');
+const botConfigRoute = require('./routes/botConfig');
+const broadcastRoute = require('./routes/broadcast');
+const videosRoute = require('./routes/videos');
+const promoRoute = require('./routes/promo');
+const approverRoute = require('./routes/approver');
 
-    } catch (error) {
-        console.error('❌ Failed to start Posting Bot:', error.message);
-    }
-}
+app.use('/api/channels', postChannelsRoute);
+app.use('/api/bot', botConfigRoute);
+app.use('/api/broadcast', broadcastRoute);
+app.use('/api/videos', videosRoute);
+app.use('/api/promo', promoRoute);
+app.use('/api/approver', approverRoute);
 
-// Enable graceful stop
-process.once('SIGINT', () => activeBot && activeBot.stop('SIGINT'));
-process.once('SIGTERM', () => activeBot && activeBot.stop('SIGTERM'));
-
-// ==========================================
-// Start Express Server
-// ==========================================
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-    console.log(`\n==================================================`);
-    console.log(`🚀 SERVER RUNNING ON PORT: ${PORT}`);
-    console.log(`🌐 LIVE WEBSITE ADMIN URL: ${LIVE_WEB_URL}`);
-    console.log(`📌 Channels Admin Panel : ${LIVE_WEB_URL}/admin/post-channels`);
-    console.log(`📌 Web App Bot Config    : ${LIVE_WEB_URL}/admin/bot-config`);
-    console.log(`==================================================\n`);
-
-    // Start Telegram Bot
-    startPostingBot();
+    console.log(`Server running on port ${PORT}`);
 });
