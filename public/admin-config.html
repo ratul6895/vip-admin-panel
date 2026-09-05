@@ -3,104 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main Bot Config</title>
+    <title>VIP Control Center</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0b1120; color: #fff; font-family: sans-serif; padding: 20px; }
-        .card { background: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 20px; max-width: 500px; margin: 0 auto; }
-        label { display: block; margin-top: 15px; color: #38bdf8; font-size: 14px; }
-        input, textarea, select { width: 100%; padding: 10px; background: #030712; border: 1px solid #374151; color: #fff; border-radius: 6px; box-sizing: border-box; margin-top: 5px; }
-        button { width: 100%; margin-top: 20px; padding: 12px; background: #0284c7; border: none; color: #fff; font-weight: bold; border-radius: 6px; cursor: pointer; }
-        button:hover { background: #0369a1; }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #3b82f6;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .main-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .main-header p {
+            color: var(--text-sub);
+            font-size: 1rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .c-green { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .c-blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .c-purple { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+        .c-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .c-rose { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+        .c-cyan { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
+
+        .card-title h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .card-desc {
+            color: var(--text-sub);
+            font-size: 0.88rem;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--accent-color);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>⚙️ Main Bot Config</h2>
-    <form id="configForm">
-        <label>Main Bot Token</label>
-        <input type="text" id="botToken" placeholder="123456:ABC..." required>
+    <div class="container">
+        <div class="main-header">
+            <h1><i class="fa-solid fa-sliders"></i> VIP Admin Control Center</h1>
+            <p>আপনার বটের সমস্ত সেটিংস এবং ফিচার এক জায়গা থেকে নিয়ন্ত্রণ করুন</p>
+        </div>
 
-        <label>Webhook Domain URL</label>
-        <input type="url" id="webhookUrl" placeholder="https://your-domain.com">
+        <div class="grid-container">
+            <!-- 1. Post Channels -->
+            <a href="/admin/post-channels" class="card">
+                <div>
+                    <div class="card-header">
+                        <div class="icon c-green"><i class="fa-solid fa-paper-plane"></i></div>
+                        <div class="card-title"><h3>Post Channels</h3></div>
+                    </div>
+                    <p class="card-desc">বট চ্যানেল আইডি যোগ করুন এবং অটোমেটিক সিঙ্ক সিস্টেম হ্যান্ডেল করুন।</p>
+                </div>
+                <div class="card-footer"><span>Manage Channels</span><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
 
-        <label>Videos Per Level</label>
-        <input type="number" id="videosPerLevel" value="3">
+            <!-- 2. Request Approver -->
+            <a href="/admin/req-approver" class="card">
+                <div>
+                    <div class="card-header">
+                        <div class="icon c-blue"><i class="fa-solid fa-user-check"></i></div>
+                        <div class="card-title"><h3>Request Approver</h3></div>
+                    </div>
+                    <p class="card-desc">চ্যানেলের পেন্ডিং জয়েন রিকোয়েস্ট অটোমেটিক এপ্রুভ বা কন্ট্রোল করুন।</p>
+                </div>
+                <div class="card-footer"><span>Approve Requests</span><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
 
-        <label>Welcome Message</label>
-        <textarea id="welcomeMessage" rows="3"></textarea>
+            <!-- 3. Broadcast Engine -->
+            <a href="/admin/broadcast" class="card">
+                <div>
+                    <div class="card-header">
+                        <div class="icon c-purple"><i class="fa-solid fa-bullhorn"></i></div>
+                        <div class="card-title"><h3>Broadcast Engine</h3></div>
+                    </div>
+                    <p class="card-desc">সমস্ত ইউজার ও চ্যানেলে একসাথে বাল্ক নোটিফিকেশন পাঠাতে পারবেন।</p>
+                </div>
+                <div class="card-footer"><span>Send Broadcast</span><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
 
-        <label>Channel Lock Text</label>
-        <input type="text" id="channelLockText">
+            <!-- 4. Video Manager -->
+            <a href="/admin/videos" class="card">
+                <div>
+                    <div class="card-header">
+                        <div class="icon c-amber"><i class="fa-solid fa-video"></i></div>
+                        <div class="card-title"><h3>Video Manager</h3></div>
+                    </div>
+                    <p class="card-desc">প্যানেলে আপলোড বা সেভ করা ভিডিও কনটেন্টগুলো নিয়ন্ত্রণ করুন।</p>
+                </div>
+                <div class="card-footer"><span>Manage Content</span><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
 
-        <label>Referral Target</label>
-        <input type="number" id="referralTarget" value="5">
+            <!-- 5. Lock / Promo Channels -->
+            <a href="/admin/promo-buttons" class="card">
+                <div>
+                    <div class="card-header">
+                        <div class="icon c-rose"><i class="fa-solid fa-lock"></i></div>
+                        <div class="card-title"><h3>Force Join & Promo</h3></div>
+                    </div>
+                    <p class="card-desc">ইউজারদের জন্য চ্যানেল বাধ্যতামূলক জয়েন বা প্রমোশনাল বাটন সেট করুন।</p>
+                </div>
+                <div class="card-footer"><span>Set Promo Buttons</span><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
 
-        <label>Delete Time (sec)</label>
-        <input type="number" id="deleteTime" value="10">
+            <!-- 6. Channel & Bot Config -->
+            <a href="/admin/channel-post" class="card">
+                <div>
+                    <div class="card-header">
+                        <div class="icon c-cyan"><i class="fa-solid fa-gear"></i></div>
+                        <div class="card-title"><h3>Bot Configuration</h3></div>
+                    </div>
+                    <p class="card-desc">বটের পোস্ট ফরম্যাট, টেক্সট এবং অন্যান্য ইন্টারনাল অপশন পরিবর্তন করুন।</p>
+                </div>
+                <div class="card-footer"><span>Bot Settings</span><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
+        </div>
+    </div>
 
-        <label>Bot Username (no @)</label>
-        <input type="text" id="botUsername" placeholder="MyBot">
-
-        <label>Welcome Media (File ID)</label>
-        <input type="text" id="welcomeMediaId">
-
-        <label>Media Type</label>
-        <select id="mediaType">
-            <option value="Photo">Photo</option>
-            <option value="Video">Video</option>
-        </select>
-
-        <button type="submit">✓ SAVE MAIN BOT SETTINGS</button>
-    </form>
-</div>
-
-<script>
-    // তথ্য লোড করা
-    async function loadSettings() {
-        const res = await fetch('/api/bot-config/get');
-        const result = await res.json();
-        if(result.success && result.data) {
-            const d = result.data;
-            document.getElementById('botToken').value = d.botToken || '';
-            document.getElementById('webhookUrl').value = d.webhookUrl || '';
-            document.getElementById('videosPerLevel').value = d.videosPerLevel || 3;
-            document.getElementById('welcomeMessage').value = d.welcomeMessage || '';
-            document.getElementById('channelLockText').value = d.channelLockText || '';
-            document.getElementById('referralTarget').value = d.referralTarget || 5;
-            document.getElementById('deleteTime').value = d.deleteTime || 10;
-            document.getElementById('botUsername').value = d.botUsername || '';
-            document.getElementById('welcomeMediaId').value = d.welcomeMediaId || '';
-            document.getElementById('mediaType').value = d.mediaType || 'Video';
-        }
-    }
-
-    // তথ্য সেভ করা
-    document.getElementById('configForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const payload = {
-            botToken: document.getElementById('botToken').value,
-            webhookUrl: document.getElementById('webhookUrl').value,
-            videosPerLevel: document.getElementById('videosPerLevel').value,
-            welcomeMessage: document.getElementById('welcomeMessage').value,
-            channelLockText: document.getElementById('channelLockText').value,
-            referralTarget: document.getElementById('referralTarget').value,
-            deleteTime: document.getElementById('deleteTime').value,
-            botUsername: document.getElementById('botUsername').value,
-            welcomeMediaId: document.getElementById('welcomeMediaId').value,
-            mediaType: document.getElementById('mediaType').value
-        };
-
-        const res = await fetch('/api/bot-config/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const result = await res.json();
-        alert(result.message);
-    });
-
-    loadSettings();
-</script>
 </body>
 </html>
