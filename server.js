@@ -5,26 +5,26 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ১. মূল ড্যাশবোর্ড রাউট (হোমপেজে ঢুকলেই পুরো ড্যাশবোর্ড দেখাবে)
+// ১. মূল ড্যাশবোর্ড রাউট
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin-config.html'));
 });
 
-// ২. ড্যাশবোর্ডের অন্যান্য পেজের রাউটসমূহ
 app.get('/admin/admin-config', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin-config.html'));
 });
 
+// ২. ফিচারভিত্তিক সঠিক পেজ রাউটসমূহ
 app.get('/admin/channel-post', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'channel-post.html'));
+    res.sendFile(path.join(__dirname, 'public', 'post-channels.html'));
 });
 
 app.get('/admin/post-channels', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'post-channels.html'));
 });
 
-app.get('/admin/bot-config', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'lock-channels.html')); 
+app.get('/admin/approver', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'req-approver.html'));
 });
 
 app.get('/admin/broadcast', (req, res) => {
@@ -35,15 +35,22 @@ app.get('/admin/videos', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'videos.html'));
 });
 
+// সঠিক Force Join & Promo পেজ রাউট
 app.get('/admin/promo', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'promo-buttons.html'));
 });
 
-app.get('/admin/approver', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'req-approver.html'));
+app.get('/admin/lock-channels', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'lock-channels.html'));
 });
 
-// API Routes Import
+// সঠিক Bot Configuration পেজ রাউট (আগের ভুল এডিটিং সংশোধন করা হলো)
+app.get('/admin/bot-config', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin-config.html')); // অথবা আপনার ডেডিকেটেড বট কনফিগ ফাইল থাকলে তার নাম দিন
+});
+
+
+// ৩. ব্যাকএন্ড API রাউটসমূহ সংযুক্তকরণ
 const postChannelsRoute = require('./routes/postChannels');
 const botConfigRoute = require('./routes/botConfig');
 const broadcastRoute = require('./routes/broadcast');
