@@ -41,8 +41,8 @@ app.get('/admin/bot-config', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'bot-config.html'));
 });
 
-app.get('/admin/post-channels', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'post-channels.html'));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin-config.html'));
 });
 
 app.get('/', (req, res) => {
