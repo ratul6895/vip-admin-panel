@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Channels (Web App Bot)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-4 flex justify-center items-center">
+
+    <div class="w-full max-w-2xl bg-gray-800 rounded-xl p-6 shadow-2xl border border-gray-700">
+        <!-- Header -->
+        <div class="flex items-center mb-4">
+            <button class="mr-3 text-gray-400 hover:text-white" onclick="history.back()">
+                <i class="fa-solid fa-arrow-left text-lg"></i>
+            </button>
+            <h1 class="text-xl font-bold">Post Channels (Web App Bot)</h1>
+        </div>
+
+        <!-- Info Alert -->
+        <div class="bg-blue-900/40 border border-blue-500/50 text-blue-200 text-xs p-3 rounded-lg mb-6 flex items-center">
+            <i class="fa-solid fa-circle-info mr-2 text-blue-400"></i>
+            এখানে চ্যানেল যোগ করলে অটোমেটিক সিঙ্ক হবে। চ্যানেল নাম Telegram থেকে অটো ফেচ হবে।
+        </div>
+
+        <!-- Add Channel Section -->
+        <div class="mb-6">
+            <label class="block text-sm font-semibold mb-2 text-emerald-400">
+                <i class="fa-solid fa-plus-circle mr-1"></i> নতুন চ্যানেল যোগ করুন
+            </label>
+            <div class="mb-2">
+                <input type="text" id="channelIdInput" placeholder="-100xxxxxxxxx" 
+                    class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+            <p class="text-xs text-gray-400 mb-3">
+                <i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i> Bot অবশ্যই চ্যানেলের Admin হতে হবে, তাহলে নাম অটো ফেচ হবে।
+            </p>
+            <button onclick="addChannel()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-3 rounded-lg flex justify-center items-center gap-2 transition">
+                <i class="fa-solid fa-plus"></i> ADD CHANNEL
+            </button>
+        </div>
+
+        <!-- Active Channels List -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="fa-solid fa-list-check text-gray-400"></i>
+                <span class="font-bold text-sm">Active Post Channels</span>
+                <span id="channelCountBadge" class="bg-blue-600 text-xs px-2 py-0.5 rounded-full font-bold">0 টি</span>
+            </div>
+
+            <!-- List Container -->
+            <div id="channelsList" class="space-y-3">
+                <!-- Dynamically Loaded via JS -->
+            </div>
+        </div>
+
+        <!-- Dynamic Config Output -->
+        <div class="bg-gray-900/80 border border-gray-700 p-3 rounded-lg text-xs font-mono text-gray-300 break-all">
+            <i class="fa-solid fa-code text-orange-400 mr-1"></i> Config/Database এ সংরক্ষিত Channels:
+            <div id="configString" class="text-emerald-400 mt-1 font-semibold">-</div>
+        </div>
+    </div>
+
+    <script>
+        // পেজ লোড হলে চ্যানেল ফেচ
+        document.addEventListener('DOMContentLoaded', fetchChannels);
+
+        async function fetchChannels() {
+            try {
+                const res = await fetch('/api/channel-post/list');
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('channelCountBadge').innerText = `${data.count} টি`;
+                    document.getElementById('configString').innerText = data.configChannelsString || 'কোনো চ্যানেল যুক্ত নেই';
+
+                    const container = document.getElementById('channelsList');
+                    container.innerHTML = '';
+
+                    data.channels.forEach(ch => {
+                        container.innerHTML += `
+                            <div class="bg-gray-900/60 border border-gray-700/60 rounded-lg p-3 flex justify-between items-center">
+                                <div>
+                                    <h3 class="font-bold text-sm text-blue-400 flex items-center gap-1">
+                                        ${ch.title} <i class="fa-solid fa-circle-check text-xs"></i>
+                                    </h3>
+                                    <p class="text-xs text-gray-400 font-mono">${ch.id}</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">Added: ${ch.addedAt || 'N/A'}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="refreshChannel('${ch.id}')" class="bg-blue-900/50 hover:bg-blue-800 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded text-xs flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                                    </button>
+                                    <button onclick="removeChannel('${ch.id}')" class="bg-red-900/50 hover:bg-red-800 border border-red-500/40 text-red-300 px-3 py-1.5 rounded text-xs flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function addChannel() {
+            const channelId = document.getElementById('channelIdInput').value.trim();
+            if (!channelId) return alert('Channel ID লিখুন!');
+
+            const res = await fetch('/api/channel-post/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ channelId })
+            });
+
+            const data = await res.json();
+            alert(data.message);
+            if (data.success) {
+                document.getElementById('channelIdInput').value = '';
+                fetchChannels();
+            }
+        }
+
+        async function removeChannel(id) {
+            if (!confirm('চ্যানেলটি মুছে ফেলতে চান?')) return;
+            const res = await fetch(`/api/channel-post/remove/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) fetchChannels();
+        }
+
+        async function refreshChannel(id) {
+            const res = await fetch(`/api/channel-post/refresh/${id}`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) fetchChannels();
+        }
+    </script>
+</body>
+</html>
