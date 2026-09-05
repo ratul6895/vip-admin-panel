@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcast</title>
+    <style>
+        body { background-color: #0b1120; color: #fff; font-family: sans-serif; padding: 20px; }
+        .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 24px; max-width: 480px; margin: 0 auto; }
+        .header { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 24px; }
+        .back-btn { position: absolute; left: 0; background: #1f2937; border: none; color: #fff; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; }
+        h2 { font-size: 18px; font-weight: 600; margin: 0; }
+        label { display: block; margin-top: 16px; color: #9ca3af; font-size: 13px; }
+        input, textarea, select { width: 100%; padding: 12px; background: #030712; border: 1px solid #1f2937; color: #fff; border-radius: 8px; box-sizing: border-box; margin-top: 6px; font-size: 14px; outline: none; }
+        textarea { height: 80px; resize: vertical; }
+        .row { display: flex; gap: 12px; }
+        .row > div { flex: 1; }
+        button.send-btn { width: 100%; margin-top: 24px; padding: 14px; background: #0284c7; border: none; color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 15px; }
+        button.send-btn:hover { background: #0369a1; }
+        
+        .history-section { margin-top: 30px; border-top: 1px solid #1f2937; padding-top: 20px; }
+        .history-title { color: #ef4444; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+        .broadcast-item { background: #1a2234; border: 1px solid #232d42; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .b-title { font-weight: 600; font-size: 14px; color: #e5e7eb; }
+        .b-meta { font-size: 12px; color: #10b981; margin-top: 4px; }
+        .revoke-btn { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .revoke-btn:hover { background: #991b1b; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <a href="/admin/dashboard" class="back-btn">←</a>
+        <h2>Broadcast</h2>
+    </div>
+
+    <form id="broadcastForm">
+        <label>Message</label>
+        <textarea id="message" placeholder="Type broadcast message..."></textarea>
+
+        <label>Media File ID</label>
+        <input type="text" id="mediaUrl" placeholder="File ID or Image URL">
+
+        <select id="mediaType">
+            <option value="Photo">Photo</option>
+            <option value="Video">Video</option>
+            <option value="Document">Document</option>
+        </select>
+
+        <div class="row">
+            <div>
+                <label>Button Text</label>
+                <input type="text" id="buttonText" placeholder="Click Here">
+            </div>
+            <div>
+                <label>Button URL</label>
+                <input type="text" id="buttonUrl" placeholder="https://...">
+            </div>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="send-btn">🚀 SEND TO 0 USERS</button>
+    </form>
+
+    <div class="history-section">
+        <div class="history-title">🗑 Delete Broadcasts</div>
+        <div id="broadcastHistory">লোডিং...</div>
+    </div>
+</div>
+
+<script>
+    async function loadBroadcastInfo() {
+        const res = await fetch('/api/broadcast/info');
+        const data = await res.json();
+
+        if (data.success) {
+            document.getElementById('btnSubmit').innerText = `🚀 SEND TO ${data.totalUsers} USERS`;
+
+            const historyContainer = document.getElementById('broadcastHistory');
+            historyContainer.innerHTML = '';
+
+            if (data.broadcasts.length === 0) {
+                historyContainer.innerHTML = '<p style="color:#6b7280; font-size:13px;">কোনো প্রমোশন পাঠানো হয়নি।</p>';
+                return;
+            }
+
+            data.broadcasts.forEach(item => {
+                const dateStr = new Date(item.timestamp).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+                historyContainer.innerHTML += `
+                    <div class="broadcast-item">
+                        <div>
+                            <div class="b-title">"${item.title}"</div>
+                            <div class="b-meta">Sent: ${item.sentCount} | ${dateStr}</div>
+                        </div>
+                        <button class="revoke-btn" onclick="revokeBroadcast('${item.id}')">Revoke</button>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    document.getElementById('broadcastForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+
+        const payload = {
+            message: document.getElementById('message').value,
+            mediaUrl: document.getElementById('mediaUrl').value,
+            mediaType: document.getElementById('mediaType').value,
+            buttonText: document.getElementById('buttonText').value,
+            buttonUrl: document.getElementById('buttonUrl').value
+        };
+
+        btn.disabled = true;
+        btn.innerText = 'Sending...';
+
+        try {
+            const res = await fetch('/api/broadcast/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await res.json();
+            alert(result.message);
+            document.getElementById('broadcastForm').reset();
+            setTimeout(loadBroadcastInfo, 2000);
+        } catch (error) {
+            alert('Error: ' + error.message);
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    async function revokeBroadcast(broadcastId) {
+        if(confirm('আপনি কি এই ব্রডকাস্ট মেসেজটি সব ইউজারের চ্যাট থেকে মুছে ফেলতে চান?')) {
+            const res = await fetch('/api/broadcast/revoke', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ broadcastId })
+            });
+
+            const result = await res.json();
+            alert(result.message);
+            setTimeout(loadBroadcastInfo, 2000);
+        }
+    }
+
+    loadBroadcastInfo();
+</script>
+</body>
+</html>
